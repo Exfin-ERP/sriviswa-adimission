@@ -2,6 +2,10 @@ import { createServerFn } from "@tanstack/react-start";
 import { requireSupabaseAuth } from "@/integrations/supabase/auth-middleware";
 import { z } from "zod";
 
+// Supabase generated types are refreshed on schema change; cast to any here
+// so server functions compile before the type file catches up.
+type AnyClient = any;
+
 const ALLOWED_STATUSES = [
   "draft","submitted","under_review","documents_pending","documents_verified",
   "payment_pending","payment_completed","approved","rejected","admission_confirmed",
