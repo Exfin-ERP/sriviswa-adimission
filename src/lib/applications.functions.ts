@@ -40,7 +40,7 @@ export const createOrUpdateApplication = createServerFn({ method: "POST" })
     submit?: boolean;
   }) => input)
   .handler(async ({ data, context }) => {
-    const { supabase, userId } = context;
+    const supabase: any = context.supabase; const { userId } = context;
     let appId = data.id;
 
     const applicationPatch: any = {
@@ -109,7 +109,7 @@ export const listApplications = createServerFn({ method: "POST" })
     academic_year_id?: string; search?: string; limit?: number; offset?: number;
   }) => input)
   .handler(async ({ data, context }) => {
-    const { supabase } = context;
+    const supabase: any = context.supabase;
     let q = supabase
       .from("applications")
       .select(
@@ -134,7 +134,7 @@ export const getApplication = createServerFn({ method: "POST" })
   .middleware([requireSupabaseAuth])
   .inputValidator((input: { id: string }) => input)
   .handler(async ({ data, context }) => {
-    const { supabase } = context;
+    const supabase: any = context.supabase;
     const { data: app, error } = await supabase.from("applications")
       .select("*, campuses(name, code), programs(name, code), branches(name, code), hostels(name), academic_years(label), quotas(name)")
       .eq("id", data.id).single();
@@ -167,7 +167,7 @@ export const advanceStatus = createServerFn({ method: "POST" })
   .middleware([requireSupabaseAuth])
   .inputValidator((input: unknown) => StatusSchema.parse(input))
   .handler(async ({ data, context }) => {
-    const { supabase, userId } = context;
+    const supabase: any = context.supabase; const { userId } = context;
     const roles = await actorRoles(supabase, userId);
     if (!roles.some((r) => ["super_admin","admin","head_office","campus_operator","admission_staff","accounts","hostel_admin"].includes(r))) {
       throw new Error("Forbidden");
@@ -192,7 +192,7 @@ export const verifyDocument = createServerFn({ method: "POST" })
   .middleware([requireSupabaseAuth])
   .inputValidator((input: { id: string; status: "verified" | "rejected" | "reupload_required" | "pending"; remarks?: string }) => input)
   .handler(async ({ data, context }) => {
-    const { supabase, userId } = context;
+    const supabase: any = context.supabase; const { userId } = context;
     const roles = await actorRoles(supabase, userId);
     if (!roles.some((r) => ["super_admin","admin","doc_verifier","admission_staff","hostel_admin"].includes(r))) {
       throw new Error("Forbidden");
@@ -219,7 +219,7 @@ export const saveDocument = createServerFn({ method: "POST" })
     file_path: string; file_name?: string; file_size?: number; mime_type?: string;
   }) => input)
   .handler(async ({ data, context }) => {
-    const { supabase } = context;
+    const supabase: any = context.supabase;
     const { error, data: row } = await supabase.from("application_documents")
       .insert({
         application_id: data.application_id,
@@ -240,7 +240,7 @@ export const getDocumentSignedUrl = createServerFn({ method: "POST" })
   .middleware([requireSupabaseAuth])
   .inputValidator((input: { path: string }) => input)
   .handler(async ({ data, context }) => {
-    const { supabase } = context;
+    const supabase: any = context.supabase;
     const { data: signed, error } = await supabase.storage.from("application-documents").createSignedUrl(data.path, 300);
     if (error) throw new Error(error.message);
     return { url: signed.signedUrl };
@@ -250,7 +250,7 @@ export const getDocumentSignedUrl = createServerFn({ method: "POST" })
 export const dashboardSummary = createServerFn({ method: "POST" })
   .middleware([requireSupabaseAuth])
   .handler(async ({ context }) => {
-    const { supabase } = context;
+    const supabase: any = context.supabase;
     const { data, error } = await supabase.from("applications").select("status, institution_type, campus_id, hostel_required, created_at");
     if (error) throw new Error(error.message);
     const rows = data ?? [];

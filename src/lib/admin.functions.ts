@@ -11,7 +11,7 @@ function isAdmin(roles: string[]) { return roles.some((r) => ["super_admin", "ad
 export const listUsers = createServerFn({ method: "POST" })
   .middleware([requireSupabaseAuth])
   .handler(async ({ context }) => {
-    const { supabase, userId } = context;
+    const supabase: any = context.supabase; const { userId } = context;
     const roles = await actorRoles(supabase, userId);
     if (!isAdmin(roles)) throw new Error("Forbidden");
     const { supabaseAdmin } = await import("@/integrations/supabase/client.server");
@@ -28,7 +28,7 @@ export const setUserRole = createServerFn({ method: "POST" })
   .middleware([requireSupabaseAuth])
   .inputValidator((input: { user_id: string; role: string; grant: boolean }) => input)
   .handler(async ({ data, context }) => {
-    const { supabase, userId } = context;
+    const supabase: any = context.supabase; const { userId } = context;
     const roles = await actorRoles(supabase, userId);
     if (!isAdmin(roles)) throw new Error("Forbidden");
     const { supabaseAdmin } = await import("@/integrations/supabase/client.server");
@@ -48,7 +48,7 @@ export const setCampusScope = createServerFn({ method: "POST" })
   .middleware([requireSupabaseAuth])
   .inputValidator((input: { user_id: string; campus_id: string; grant: boolean }) => input)
   .handler(async ({ data, context }) => {
-    const { supabase, userId } = context;
+    const supabase: any = context.supabase; const { userId } = context;
     const roles = await actorRoles(supabase, userId);
     if (!isAdmin(roles)) throw new Error("Forbidden");
     const { supabaseAdmin } = await import("@/integrations/supabase/client.server");
@@ -73,7 +73,7 @@ export const listAuditLogs = createServerFn({ method: "POST" })
   .middleware([requireSupabaseAuth])
   .inputValidator((input: { limit?: number }) => input)
   .handler(async ({ data, context }) => {
-    const { supabase, userId } = context;
+    const supabase: any = context.supabase; const { userId } = context;
     const roles = await actorRoles(supabase, userId);
     if (!isAdmin(roles) && !roles.includes("head_office")) throw new Error("Forbidden");
     const { data: rows, error } = await supabase.from("audit_logs").select("*")
