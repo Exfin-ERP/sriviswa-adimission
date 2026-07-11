@@ -16,7 +16,7 @@ async function actorRoles(supabase: any, userId: string) {
   return (data ?? []).map((r: any) => r.role as string);
 }
 function isSuperOrAdmin(roles: string[]) {
-  return roles.some((r) => ["super_admin", "admin", "head_office"].includes(r));
+  return roles.some((r: string) => ["super_admin", "admin", "head_office"].includes(r));
 }
 
 /* ---------------- CREATE / SAVE DRAFT ---------------- */
@@ -169,7 +169,7 @@ export const advanceStatus = createServerFn({ method: "POST" })
   .handler(async ({ data, context }) => {
     const supabase: any = context.supabase; const { userId } = context;
     const roles = await actorRoles(supabase, userId);
-    if (!roles.some((r) => ["super_admin","admin","head_office","campus_operator","admission_staff","accounts","hostel_admin"].includes(r))) {
+    if (!roles.some((r: string) => ["super_admin","admin","head_office","campus_operator","admission_staff","accounts","hostel_admin"].includes(r))) {
       throw new Error("Forbidden");
     }
     const { data: current, error: e0 } = await supabase.from("applications").select("status, campus_id").eq("id", data.id).single();
@@ -194,7 +194,7 @@ export const verifyDocument = createServerFn({ method: "POST" })
   .handler(async ({ data, context }) => {
     const supabase: any = context.supabase; const { userId } = context;
     const roles = await actorRoles(supabase, userId);
-    if (!roles.some((r) => ["super_admin","admin","doc_verifier","admission_staff","hostel_admin"].includes(r))) {
+    if (!roles.some((r: string) => ["super_admin","admin","doc_verifier","admission_staff","hostel_admin"].includes(r))) {
       throw new Error("Forbidden");
     }
     const { error } = await supabase.from("application_documents").update({
