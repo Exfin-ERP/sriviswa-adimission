@@ -1,24 +1,118 @@
-import { createFileRoute } from "@tanstack/react-router";
+import { createFileRoute, Link } from "@tanstack/react-router";
+import { ArrowRight, GraduationCap, ShieldCheck, Building2, FileCheck2, CreditCard, ClipboardList } from "lucide-react";
+import { Logo } from "@/components/Logo";
+import { Button } from "@/components/ui/button";
+import { INSTITUTION_TYPES } from "@/lib/roles";
 
-// No head() here: the home route inherits title/description/og/twitter from
-// __root.tsx, and ships no og:image so serve-time hosting can inject the
-// project's social preview (explicit og:image or latest screenshot).
 export const Route = createFileRoute("/")({
-  component: Index,
+  head: () => ({
+    meta: [
+      { title: "Sri Viswa Admissions — Apply Online" },
+      { name: "description", content: "Apply online to Sri Viswa Group of Institutions — School, Intermediate, College, Degree and Hostel admissions across our campuses." },
+    ],
+  }),
+  component: Landing,
 });
 
-// IMPORTANT: Replace this placeholder. See ./README.md for routing conventions.
-function Index() {
+function Landing() {
   return (
-    <div
-      className="flex min-h-screen items-center justify-center"
-      style={{ backgroundColor: "#fcfbf8" }}
-    >
-      <img
-        data-lovable-blank-page-placeholder="REMOVE_THIS"
-        src="https://cdn.gpteng.co/blank-app-v1.svg"
-        alt="Your app will live here!"
-      />
+    <div className="min-h-screen bg-background">
+      <header className="border-b border-border bg-surface/80 backdrop-blur">
+        <div className="mx-auto flex max-w-7xl items-center justify-between px-6 py-4">
+          <Logo size={44} />
+          <nav className="flex items-center gap-2">
+            <Link to="/auth"><Button variant="ghost">Staff Sign in</Button></Link>
+            <Link to="/apply"><Button>Apply Now <ArrowRight className="ml-1 h-4 w-4" /></Button></Link>
+          </nav>
+        </div>
+      </header>
+
+      <section className="relative overflow-hidden">
+        <div className="absolute inset-0 -z-10 bg-[radial-gradient(ellipse_at_top,theme(colors.primary/12),transparent_60%)]" />
+        <div className="mx-auto max-w-7xl px-6 pt-16 pb-20 md:pt-24 md:pb-28">
+          <div className="max-w-3xl">
+            <div className="inline-flex items-center gap-2 rounded-full border border-accent/30 bg-accent-soft px-3 py-1 text-xs font-medium text-accent">
+              <span className="h-1.5 w-1.5 rounded-full bg-accent" />
+              Admissions Open — Academic Year 2026-2027
+            </div>
+            <h1 className="mt-5 text-4xl font-bold tracking-tight md:text-6xl">
+              Your journey with <span className="text-primary">Sri Viswa</span> starts here.
+            </h1>
+            <p className="mt-5 max-w-2xl text-lg text-muted-foreground">
+              One centralized portal to apply to any Sri Viswa institution — School, Intermediate,
+              College, Degree and Hostel — across all our campuses. Fill your application, upload
+              documents and pay fees online in minutes.
+            </p>
+            <div className="mt-8 flex flex-wrap gap-3">
+              <Link to="/apply">
+                <Button size="lg" className="h-12 px-6 text-base">
+                  Start Application <ArrowRight className="ml-2 h-5 w-5" />
+                </Button>
+              </Link>
+              <a href="#institutions">
+                <Button size="lg" variant="outline" className="h-12 px-6 text-base">
+                  Explore Programs
+                </Button>
+              </a>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      <section id="institutions" className="border-t border-border bg-surface-muted py-16">
+        <div className="mx-auto max-w-7xl px-6">
+          <h2 className="text-2xl font-bold tracking-tight md:text-3xl">Apply to any of our institutions</h2>
+          <p className="mt-2 text-muted-foreground">Choose the type of admission you want to apply for.</p>
+          <div className="mt-8 grid grid-cols-2 gap-4 md:grid-cols-5">
+            {INSTITUTION_TYPES.map((t) => (
+              <Link
+                key={t.value}
+                to="/apply"
+                search={{ type: t.value }}
+                className="group rounded-xl border border-border bg-card p-5 shadow-[var(--shadow-card)] transition-all hover:-translate-y-0.5 hover:shadow-[var(--shadow-elevated)] hover:border-primary/40"
+              >
+                <div className="flex h-10 w-10 items-center justify-center rounded-lg bg-primary-soft text-primary">
+                  <GraduationCap className="h-5 w-5" />
+                </div>
+                <div className="mt-4 font-semibold">{t.label}</div>
+                <div className="mt-1 text-xs text-muted-foreground">
+                  Apply for {t.label.toLowerCase()} admission
+                </div>
+              </Link>
+            ))}
+          </div>
+        </div>
+      </section>
+
+      <section className="py-16">
+        <div className="mx-auto max-w-7xl px-6">
+          <h2 className="text-2xl font-bold tracking-tight md:text-3xl">How admissions work</h2>
+          <div className="mt-10 grid gap-6 md:grid-cols-4">
+            {[
+              { icon: ClipboardList, title: "1. Fill Application", desc: "Complete the guided multi-step application form." },
+              { icon: FileCheck2, title: "2. Upload Documents", desc: "Submit your marks memos, TC, ID and other proofs." },
+              { icon: CreditCard, title: "3. Pay Fee", desc: "Pay your admission fee securely online." },
+              { icon: ShieldCheck, title: "4. Get Confirmation", desc: "Our team verifies and confirms your admission." },
+            ].map((s) => (
+              <div key={s.title} className="rounded-xl border border-border bg-card p-6">
+                <s.icon className="h-6 w-6 text-accent" />
+                <div className="mt-3 font-semibold">{s.title}</div>
+                <div className="mt-1 text-sm text-muted-foreground">{s.desc}</div>
+              </div>
+            ))}
+          </div>
+        </div>
+      </section>
+
+      <footer className="border-t border-border bg-surface">
+        <div className="mx-auto flex max-w-7xl flex-col items-center justify-between gap-4 px-6 py-8 md:flex-row">
+          <Logo size={36} />
+          <div className="flex items-center gap-2 text-xs text-muted-foreground">
+            <Building2 className="h-3.5 w-3.5" />
+            © {new Date().getFullYear()} Sri Viswa Group of Institutions. All rights reserved.
+          </div>
+        </div>
+      </footer>
     </div>
   );
 }
