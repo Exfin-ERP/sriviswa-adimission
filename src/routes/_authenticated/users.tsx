@@ -89,7 +89,7 @@ function UsersAdmin() {
                     </div>
                   </PopoverContent></Popover>
                   <div className="mt-1 flex flex-wrap gap-1">
-                    {userRoles.map((r) => <span key={r} className="rounded bg-primary-soft px-1.5 py-0.5 text-[10px] text-primary">{ROLE_LABEL[r as any] ?? r}</span>)}
+                    {userRoles.map((r) => <span key={r} className="rounded bg-primary-soft px-1.5 py-0.5 text-[10px] text-primary">{(ROLE_LABEL as Record<string, string>)[r] ?? r}</span>)}
                   </div>
                 </TableCell>
                 <TableCell>
