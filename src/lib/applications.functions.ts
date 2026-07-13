@@ -7,6 +7,30 @@ const ALLOWED_STATUSES = [
   "payment_pending","payment_completed","approved","rejected","admission_confirmed",
 ] as const;
 
+type AdmissionSelectionValue = {
+  category?: { id?: string; label?: string };
+  branch?: { id?: string; label?: string };
+  course?: { id?: string; label?: string };
+  campus?: { id?: string; label?: string };
+  form_type?: string;
+  hostel_required?: boolean;
+};
+
+function normalizeSelection(value: unknown): AdmissionSelectionValue {
+  if (!value || typeof value !== "object" || Array.isArray(value)) return {};
+  return value as AdmissionSelectionValue;
+}
+
+function matchesCampusSelection(selection: AdmissionSelectionValue, campusFilter?: string) {
+  if (!campusFilter) return true;
+  return selection.campus?.id === campusFilter;
+}
+
+function matchesSearch(applicationNumber: string | null | undefined, search?: string) {
+  if (!search) return true;
+  return (applicationNumber ?? "").toLowerCase().includes(search.toLowerCase());
+}
+
 async function actorRoles(supabase: any, userId: string) {
   const { data } = await supabase.from("user_roles").select("role").eq("user_id", userId);
   return (data ?? []).map((r: any) => r.role as string);
@@ -112,17 +136,30 @@ export const listApplications = createServerFn({ method: "POST" })
         "id, application_number, institution_type, admission_selection, status, campus_id, program_id, hostel_required, applicant_email, submitted_at, created_at, campuses(name), programs(name)",
         { count: "exact" }
       )
-      .order("created_at", { ascending: false })
-      .limit(Math.min(data.limit ?? 50, 200))
-      .range(data.offset ?? 0, (data.offset ?? 0) + Math.min(data.limit ?? 50, 200) - 1);
+      .order("created_at", { ascending: false });
     if (data.status) q = q.eq("status", data.status);
     if (data.institution_type) q = q.eq("institution_type", data.institution_type);
-    if (data.campus_id) q = q.eq("campus_id", data.campus_id);
     if (data.academic_year_id) q = q.eq("academic_year_id", data.academic_year_id);
-    if (data.search) q = q.ilike("application_number", `%${data.search}%`);
-    const { data: rows, count, error } = await q;
+
+    const { data: rows, error } = await q;
     if (error) throw new Error(error.message);
-    return { rows: rows ?? [], count: count ?? 0 };
+
+    const filtered = (rows ?? []).filter((row: any) => {
+      const selection = normalizeSelection(row.admission_selection);
+      const campusMatch = !data.campus_id
+        ? true
+        : row.campus_id
+          ? row.campus_id === data.campus_id
+          : matchesCampusSelection(selection, data.campus_id);
+      return campusMatch && matchesSearch(row.application_number, data.search);
+    });
+
+    const offset = Math.max(data.offset ?? 0, 0);
+    const limit = Math.min(data.limit ?? 50, 200);
+    return {
+      rows: filtered.slice(offset, offset + limit),
+      count: filtered.length,
+    };
   });
 
 /* ---------------- APPLICATION DETAIL ---------------- */
@@ -247,7 +284,7 @@ export const dashboardSummary = createServerFn({ method: "POST" })
   .middleware([requireSupabaseAuth])
   .handler(async ({ context }) => {
     const supabase: any = context.supabase;
-    const { data, error } = await supabase.from("applications").select("status, institution_type, campus_id, hostel_required, created_at");
+    const { data, error } = await supabase.from("applications").select("status, institution_type, campus_id, hostel_required, created_at, admission_selection");
     if (error) throw new Error(error.message);
     const rows = data ?? [];
     const byStatus: Record<string, number> = {};
@@ -256,9 +293,11 @@ export const dashboardSummary = createServerFn({ method: "POST" })
     let hostelRequests = 0, today = 0;
     const t = new Date(); t.setHours(0, 0, 0, 0);
     for (const r of rows) {
+      const selection = normalizeSelection(r.admission_selection);
+      const campusKey = r.campus_id ?? selection.campus?.id ?? selection.campus?.label;
       byStatus[r.status] = (byStatus[r.status] ?? 0) + 1;
       byInstitution[r.institution_type] = (byInstitution[r.institution_type] ?? 0) + 1;
-      if (r.campus_id) byCampus[r.campus_id] = (byCampus[r.campus_id] ?? 0) + 1;
+      if (campusKey) byCampus[campusKey] = (byCampus[campusKey] ?? 0) + 1;
       if (r.hostel_required) hostelRequests++;
       if (new Date(r.created_at) >= t) today++;
     }
