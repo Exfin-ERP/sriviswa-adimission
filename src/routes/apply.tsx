@@ -219,8 +219,8 @@ function Wizard({ initialType, session }: { initialType?: InstitutionType; sessi
   }
 
   async function next() {
-    // Save draft on each transition once we have institution + campus.
-    if (step >= 1 && form.campus_id && form.program_id) {
+    // Save draft on each transition once we have institution + academic year.
+    if (step >= 1 && form.academic_year_id) {
       try { await saveDraft(false); } catch { return; }
     }
     setStep((s) => Math.min(STEPS.length - 1, s + 1));
@@ -228,7 +228,7 @@ function Wizard({ initialType, session }: { initialType?: InstitutionType; sessi
   const prev = () => setStep((s) => Math.max(0, s - 1));
 
   async function uploadFile(def: any, file: File) {
-    if (!form.id) { toast.error("Save draft first (fill Institution + Program)"); return; }
+    if (!form.id) { toast.error("Save draft first (complete step 2)"); return; }
     if (file.size > def.max_size_mb * 1024 * 1024) { toast.error(`File exceeds ${def.max_size_mb} MB`); return; }
     const ext = file.name.split(".").pop()?.toLowerCase() ?? "";
     if (!def.allowed_formats.includes(ext)) { toast.error(`Allowed: ${def.allowed_formats.join(", ")}`); return; }
@@ -247,8 +247,8 @@ function Wizard({ initialType, session }: { initialType?: InstitutionType; sessi
   }
 
   const canProceed = useMemo(() => {
-    if (step === 0) return true;
-    if (step === 1) return !!form.campus_id && !!form.program_id && !!form.academic_year_id;
+    if (step === 0) return !!form.sel_category && !!form.sel_branch && !!form.sel_course && !!form.sel_campus;
+    if (step === 1) return !!form.academic_year_id;
     if (step === 2) return form.student.first_name && form.student.last_name && form.student.date_of_birth;
     if (step === 3) return form.parent.father_name && form.parent.father_phone;
     if (step === 4) return form.address.present_line1 && form.address.present_city && form.address.present_pincode;
