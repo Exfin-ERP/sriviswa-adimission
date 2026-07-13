@@ -3,12 +3,12 @@ import { useQuery } from "@tanstack/react-query";
 import { useServerFn } from "@tanstack/react-start";
 import { useState } from "react";
 import { listApplications } from "@/lib/applications.functions";
-import { supabase } from "@/integrations/supabase/client";
+import { campuses as sriViswaCampuses } from "@/data/sriVishwaAdmissionMasters";
 import { Card, CardContent } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { StatusBadge } from "@/components/StatusBadge";
-import { APPLICATION_STATUSES, INSTITUTION_TYPES, STATUS_LABEL, type ApplicationStatus } from "@/lib/roles";
+import { INSTITUTION_TYPES, APPLICATION_STATUSES, STATUS_LABEL, type ApplicationStatus } from "@/lib/roles";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
 import { ExternalLink } from "lucide-react";
 
@@ -24,11 +24,6 @@ function ApplicationsList() {
   const [search, setSearch] = useState("");
 
   const call = useServerFn(listApplications);
-
-  const { data: campuses } = useQuery({
-    queryKey: ["campuses"],
-    queryFn: async () => (await supabase.from("campuses").select("id,name,code").order("name")).data ?? [],
-  });
 
   const { data, isLoading } = useQuery({
     queryKey: ["apps", status, inst, campus, search],
@@ -73,7 +68,7 @@ function ApplicationsList() {
               <SelectTrigger><SelectValue placeholder="Campus" /></SelectTrigger>
               <SelectContent>
                 <SelectItem value="all">All campuses</SelectItem>
-                {(campuses ?? []).map((c: any) => <SelectItem key={c.id} value={c.id}>{c.name}</SelectItem>)}
+                {sriViswaCampuses.map((c) => <SelectItem key={c.id} value={c.id}>{c.label}</SelectItem>)}
               </SelectContent>
             </Select>
           </div>
