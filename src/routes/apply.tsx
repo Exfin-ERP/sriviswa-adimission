@@ -16,6 +16,19 @@ import { Card, CardContent } from "@/components/ui/card";
 import { toast } from "sonner";
 import { ArrowLeft, ArrowRight, Check, FileUp, Loader2, Upload } from "lucide-react";
 import { INSTITUTION_TYPES, type InstitutionType } from "@/lib/roles";
+import {
+  institutionCategories,
+  getBranchesByInstitutionCategory,
+  getCoursesByCategoryAndBranch,
+  getCampusesByBranchAndCourse,
+  getAdmissionFormType,
+  isHostelBranch,
+  isHostelCampus,
+  getBranchById,
+  getCourseById,
+  getCampusById,
+  type InstitutionCategoryId,
+} from "@/data/sriVishwaAdmissionMasters";
 
 const applySearchSchema = z.object({ type: z.enum(["school","intermediate","college","degree","hostel"]).optional() });
 
