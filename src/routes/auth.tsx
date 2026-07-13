@@ -1,5 +1,6 @@
 import { createFileRoute, Link, useNavigate } from "@tanstack/react-router";
 import { useState } from "react";
+import { z } from "zod";
 import { supabase } from "@/integrations/supabase/client";
 import { Logo } from "@/components/Logo";
 import { Button } from "@/components/ui/button";
@@ -9,17 +10,22 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { toast } from "sonner";
 import { Loader2 } from "lucide-react";
 
+const authSearchSchema = z.object({ next: z.string().optional() });
+
 export const Route = createFileRoute("/auth")({
   head: () => ({ meta: [{ title: "Staff Sign in — Sri Viswa Admissions" }] }),
+  validateSearch: authSearchSchema,
   component: AuthPage,
 });
 
 function AuthPage() {
   const navigate = useNavigate();
+  const search = Route.useSearch();
   const [loading, setLoading] = useState(false);
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [fullName, setFullName] = useState("");
+  const nextPath = search.next === "/apply" ? "/apply" : "/dashboard";
 
   async function signIn(e: React.FormEvent) {
     e.preventDefault();
@@ -28,7 +34,7 @@ function AuthPage() {
     setLoading(false);
     if (error) return toast.error(error.message);
     toast.success("Signed in");
-    navigate({ to: "/dashboard" });
+    navigate({ to: nextPath });
   }
 
   async function signUp(e: React.FormEvent) {
@@ -37,7 +43,7 @@ function AuthPage() {
     const { error } = await supabase.auth.signUp({
       email, password,
       options: {
-        emailRedirectTo: window.location.origin + "/dashboard",
+        emailRedirectTo: window.location.origin + nextPath,
         data: { full_name: fullName },
       },
     });
