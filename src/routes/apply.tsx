@@ -287,63 +287,138 @@ function Wizard({ initialType, session }: { initialType?: InstitutionType; sessi
             <h2 className="text-xl font-bold tracking-tight">{step + 1}. {STEPS[step]}</h2>
           </div>
 
-          {step === 0 && (
-            <div className="space-y-4">
-              <Label>Which type of admission are you applying for?</Label>
-              <RadioGroup value={form.institution_type} onValueChange={(v) => upd({ institution_type: v as InstitutionType, hostel_required: v === "hostel", campus_id: undefined, program_id: undefined, branch_id: undefined })}>
-                <div className="grid gap-3 md:grid-cols-2">
-                  {INSTITUTION_TYPES.map((t) => (
-                    <label key={t.value} className={`flex cursor-pointer items-center gap-3 rounded-lg border p-4 ${form.institution_type === t.value ? "border-primary bg-primary-soft" : "border-border"}`}>
-                      <RadioGroupItem value={t.value} />
-                      <div><div className="font-semibold">{t.label}</div>
-                        <div className="text-xs text-muted-foreground">Apply for {t.label.toLowerCase()} admission</div></div>
-                    </label>
-                  ))}
+          {step === 0 && (() => {
+            const branchOptions = getBranchesByInstitutionCategory(form.sel_category);
+            const courseOptions = getCoursesByCategoryAndBranch(form.sel_category, form.sel_branch);
+            const campusOptions = getCampusesByBranchAndCourse(form.sel_branch, form.sel_course);
+            const formType = getAdmissionFormType(form.sel_category);
+            const isHostel = isHostelBranch(form.sel_branch) || isHostelCampus(form.sel_campus);
+            return (
+              <div className="space-y-5">
+                <p className="text-sm text-muted-foreground">
+                  Select your institution, branch, course and campus. Each dropdown unlocks the next.
+                </p>
+                <div className="grid gap-4 md:grid-cols-2">
+                  <div>
+                    <Label>1. Institution Category *</Label>
+                    <Select
+                      value={form.sel_category ?? ""}
+                      onValueChange={(v) => {
+                        const cat = v as InstitutionCategoryId;
+                        const ft = getAdmissionFormType(cat) ?? "school";
+                        upd({
+                          sel_category: cat,
+                          sel_branch: undefined,
+                          sel_course: undefined,
+                          sel_campus: undefined,
+                          institution_type: ft as InstitutionType,
+                          hostel_required: false,
+                        });
+                      }}
+                    >
+                      <SelectTrigger><SelectValue placeholder="Select institution" /></SelectTrigger>
+                      <SelectContent>
+                        {institutionCategories.map((c) => (
+                          <SelectItem key={c.id} value={c.id}>{c.label}</SelectItem>
+                        ))}
+                      </SelectContent>
+                    </Select>
+                  </div>
+
+                  <div>
+                    <Label>2. Branch / Unit *</Label>
+                    <Select
+                      value={form.sel_branch ?? ""}
+                      onValueChange={(v) => {
+                        const hostel = isHostelBranch(v);
+                        upd({ sel_branch: v, sel_course: undefined, sel_campus: undefined, hostel_required: hostel });
+                      }}
+                      disabled={!form.sel_category || branchOptions.length === 0}
+                    >
+                      <SelectTrigger>
+                        <SelectValue placeholder={form.sel_category ? "Select branch" : "Select category first"} />
+                      </SelectTrigger>
+                      <SelectContent>
+                        {branchOptions.map((b) => (
+                          <SelectItem key={b.id} value={b.id}>{b.id} — {b.label}</SelectItem>
+                        ))}
+                      </SelectContent>
+                    </Select>
+                  </div>
+
+                  <div>
+                    <Label>3. Course / Class *</Label>
+                    <Select
+                      value={form.sel_course ?? ""}
+                      onValueChange={(v) => upd({ sel_course: v, sel_campus: undefined })}
+                      disabled={!form.sel_branch || courseOptions.length === 0}
+                    >
+                      <SelectTrigger>
+                        <SelectValue placeholder={form.sel_branch ? "Select course" : "Select branch first"} />
+                      </SelectTrigger>
+                      <SelectContent>
+                        {courseOptions.map((c) => (
+                          <SelectItem key={c.id} value={c.id}>{c.label}</SelectItem>
+                        ))}
+                      </SelectContent>
+                    </Select>
+                  </div>
+
+                  <div>
+                    <Label>4. Campus *</Label>
+                    <Select
+                      value={form.sel_campus ?? ""}
+                      onValueChange={(v) => {
+                        const hostel = isHostelBranch(form.sel_branch) || isHostelCampus(v);
+                        upd({ sel_campus: v, hostel_required: hostel });
+                      }}
+                      disabled={!form.sel_course || campusOptions.length === 0}
+                    >
+                      <SelectTrigger>
+                        <SelectValue placeholder={form.sel_course ? (campusOptions.length ? "Select campus" : "No campus available") : "Select course first"} />
+                      </SelectTrigger>
+                      <SelectContent>
+                        {campusOptions.map((c) => (
+                          <SelectItem key={c.id} value={c.id}>{c.label}</SelectItem>
+                        ))}
+                      </SelectContent>
+                    </Select>
+                  </div>
                 </div>
-              </RadioGroup>
-            </div>
-          )}
+
+                {form.sel_category && form.sel_branch && form.sel_course && form.sel_campus && (
+                  <div className="rounded-md border border-primary/30 bg-primary-soft p-3 text-sm text-primary">
+                    You will fill the <b>{formType === "intermediate" ? "Intermediate" : formType === "degree" ? "Degree" : "School"} Admission Form</b>
+                    {isHostel ? " with a Hostel Details section." : "."}
+                  </div>
+                )}
+              </div>
+            );
+          })()}
 
           {step === 1 && (
             <div className="space-y-4">
+              <div className="rounded-md border border-border bg-muted/30 p-4 text-sm space-y-1">
+                <div><b>Institution:</b> {institutionCategories.find((c) => c.id === form.sel_category)?.label}</div>
+                <div><b>Branch:</b> {getBranchById(form.sel_branch)?.id} — {getBranchById(form.sel_branch)?.label}</div>
+                <div><b>Course:</b> {getCourseById(form.sel_course)?.label}</div>
+                <div><b>Campus:</b> {getCampusById(form.sel_campus)?.label}</div>
+                <div><b>Hostel required:</b> {form.hostel_required ? "Yes" : "No"}</div>
+              </div>
               <div className="grid gap-4 md:grid-cols-2">
-                <div><Label>Campus *</Label>
-                  <Select value={form.campus_id ?? ""} onValueChange={(v) => upd({ campus_id: v, program_id: undefined, branch_id: undefined })}>
-                    <SelectTrigger><SelectValue placeholder="Select campus" /></SelectTrigger>
-                    <SelectContent>
-                      {campuses.filter((c) => c.supported_types.includes(form.institution_type)).map((c) => (
-                        <SelectItem key={c.id} value={c.id}>{c.name}</SelectItem>
-                      ))}
-                    </SelectContent>
-                  </Select>
-                </div>
                 <div><Label>Academic Year *</Label>
                   <Select value={form.academic_year_id ?? ""} onValueChange={(v) => upd({ academic_year_id: v })}>
                     <SelectTrigger><SelectValue placeholder="Select year" /></SelectTrigger>
                     <SelectContent>{years.map((y) => <SelectItem key={y.id} value={y.id}>{y.label}</SelectItem>)}</SelectContent>
                   </Select>
                 </div>
-                <div><Label>{form.institution_type === "school" ? "Class" : form.institution_type === "intermediate" ? "Group / Stream" : "Course"} *</Label>
-                  <Select value={form.program_id ?? ""} onValueChange={(v) => upd({ program_id: v, branch_id: undefined })}>
-                    <SelectTrigger><SelectValue placeholder="Select" /></SelectTrigger>
-                    <SelectContent>{programs.map((p) => <SelectItem key={p.id} value={p.id}>{p.name}</SelectItem>)}</SelectContent>
-                  </Select>
-                </div>
-                {branches.length > 0 && (
-                  <div><Label>Branch</Label>
-                    <Select value={form.branch_id ?? ""} onValueChange={(v) => upd({ branch_id: v })}>
-                      <SelectTrigger><SelectValue placeholder="Select branch" /></SelectTrigger>
-                      <SelectContent>{branches.map((b) => <SelectItem key={b.id} value={b.id}>{b.name}</SelectItem>)}</SelectContent>
-                    </Select>
-                  </div>
-                )}
                 <div><Label>Category / Quota</Label>
                   <Select value={form.quota_id ?? ""} onValueChange={(v) => upd({ quota_id: v })}>
                     <SelectTrigger><SelectValue placeholder="Optional" /></SelectTrigger>
                     <SelectContent>{quotas.map((q) => <SelectItem key={q.id} value={q.id}>{q.name}</SelectItem>)}</SelectContent>
                   </Select>
                 </div>
-                {form.institution_type !== "hostel" && (
+                {form.institution_type !== "hostel" && !isHostelBranch(form.sel_branch) && (
                   <div className="md:col-span-2">
                     <label className="flex items-center gap-2 rounded-md border border-border p-3">
                       <Checkbox checked={form.hostel_required} onCheckedChange={(v) => upd({ hostel_required: !!v })} />
