@@ -33,10 +33,10 @@ export const STAFF_ROLES: AppRole[] = [
 ];
 
 export const INSTITUTION_TYPES = [
-  { value: "school", label: "School" },
-  { value: "intermediate", label: "Intermediate" },
+  { value: "school", label: "Sri Viswa Co Schools" },
+  { value: "intermediate", label: "Sri Viswa Jr College" },
   { value: "college", label: "College" },
-  { value: "degree", label: "Degree" },
+  { value: "degree", label: "Sri Viswa Degree College" },
   { value: "hostel", label: "Hostel" },
 ] as const;
 
