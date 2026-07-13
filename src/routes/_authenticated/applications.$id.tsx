@@ -44,6 +44,12 @@ function Detail() {
 
   if (isLoading || !data) return <div className="text-sm text-muted-foreground">Loading…</div>;
   const { application: a, student, parent, address, academic, hostel, documents, history, payments } = data;
+  const selection = a.admission_selection ?? {};
+  const categoryLabel = selection.category?.label ?? a.institution_type;
+  const branchLabel = selection.branch ? `${selection.branch.id} — ${selection.branch.label}` : a.branches?.name;
+  const courseLabel = selection.course?.label ?? a.programs?.name;
+  const campusLabel = selection.campus?.label ?? a.campuses?.name;
+  const hostelLabel = hostel?.selected_campus_label ?? selection.campus?.label ?? a.hostels?.name;
 
   async function doAdvance() {
     try {
@@ -53,6 +59,7 @@ function Detail() {
       qc.invalidateQueries({ queryKey: ["app", id] });
     } catch (e: any) { toast.error(e.message); }
   }
+
   async function doVerify(docId: string, status: string) {
     const remarks = status === "rejected" ? prompt("Reason for rejection?") ?? undefined : undefined;
     try {
@@ -61,6 +68,7 @@ function Detail() {
       toast.success("Document " + status);
     } catch (e: any) { toast.error(e.message); }
   }
+
   async function openDoc(path: string) {
     try {
       const { url } = await signUrl({ data: { path } } as any);
@@ -77,7 +85,7 @@ function Detail() {
           </Link>
           <h1 className="text-2xl font-bold tracking-tight">{a.application_number}</h1>
           <div className="mt-1 flex items-center gap-2 text-sm text-muted-foreground">
-            <span className="capitalize">{a.institution_type}</span> · {a.campuses?.name ?? "—"} · {a.programs?.name ?? "—"}
+            <span className="capitalize">{a.institution_type}</span> · {campusLabel ?? "—"} · {courseLabel ?? "—"}
           </div>
         </div>
         <div className="flex items-center gap-2">
@@ -96,6 +104,15 @@ function Detail() {
         </TabsList>
 
         <TabsContent value="overview" className="space-y-4">
+          <Card><CardHeader><CardTitle className="text-base">Admission Selection</CardTitle></CardHeader><CardContent>
+            <KV label="Institution" value={categoryLabel} />
+            <KV label="Branch / Unit" value={branchLabel} />
+            <KV label="Course / Class" value={courseLabel} />
+            <KV label="Campus" value={campusLabel} />
+            <KV label="Form Type" value={selection.form_type ?? a.institution_type} />
+            <KV label="Hostel Required" value={a.hostel_required ? "Yes" : "No"} />
+          </CardContent></Card>
+
           <Card><CardHeader><CardTitle className="text-base">Student</CardTitle></CardHeader><CardContent>
             <KV label="Name" value={[student?.first_name, student?.middle_name, student?.last_name].filter(Boolean).join(" ") || "—"} />
             <KV label="Gender" value={student?.gender} />
@@ -125,17 +142,18 @@ function Detail() {
             <KV label="Class / Year" value={[academic?.previous_class, academic?.previous_year].filter(Boolean).join(" · ")} />
             <KV label="Marks %" value={academic?.previous_marks_percent} />
             <KV label="TC Number" value={academic?.tc_number} />
-            <KV label="Applying For" value={academic?.applying_for_class ?? academic?.stream} />
+            <KV label="Applying For" value={academic?.applying_for_class ?? academic?.stream ?? courseLabel} />
           </CardContent></Card>
 
           {a.hostel_required && (
             <Card><CardHeader><CardTitle className="text-base">Hostel</CardTitle></CardHeader><CardContent>
-              <KV label="Hostel" value={a.hostels?.name} />
+              <KV label="Selected Hostel / Campus" value={hostelLabel} />
               <KV label="Room Type" value={hostel?.room_type} />
               <KV label="Mess" value={hostel?.mess_preference} />
               <KV label="Medical" value={hostel?.medical_conditions} />
               <KV label="Dietary" value={hostel?.dietary_requirements} />
               <KV label="Emergency Contact" value={[hostel?.emergency_contact_name, hostel?.emergency_contact_phone].filter(Boolean).join(" · ")} />
+              <KV label="Parent Consent" value={hostel?.parent_consent ? "Yes" : "No"} />
             </CardContent></Card>
           )}
         </TabsContent>
@@ -165,10 +183,7 @@ function Detail() {
               <div className="space-y-2">
                 {payments.map((p: any) => (
                   <div key={p.id} className="flex items-center justify-between rounded-md border border-border p-3 text-sm">
-                    <div>
-                      <div className="font-medium">₹{p.amount} · {p.purpose}</div>
-                      <div className="text-xs text-muted-foreground">{p.provider} · {p.provider_payment_id ?? p.provider_order_id ?? "—"}</div>
-                    </div>
+                    <div><div className="font-medium">₹{p.amount} · {p.purpose}</div><div className="text-xs text-muted-foreground">{p.provider} · {p.provider_payment_id ?? p.provider_order_id ?? "—"}</div></div>
                     <span className="rounded-full bg-muted px-2 py-0.5 text-xs">{p.status}</span>
                   </div>
                 ))}
@@ -182,13 +197,7 @@ function Detail() {
             {history.length === 0 ? <div className="text-sm text-muted-foreground">No history.</div> : (
               <ol className="space-y-2">
                 {history.map((h: any) => (
-                  <li key={h.id} className="flex items-start gap-3 text-sm">
-                    <div className="mt-1 h-2 w-2 rounded-full bg-primary" />
-                    <div>
-                      <div>{h.from_status ?? "—"} → <b>{h.to_status}</b></div>
-                      <div className="text-xs text-muted-foreground">{new Date(h.created_at).toLocaleString()}{h.note ? ` · ${h.note}` : ""}</div>
-                    </div>
-                  </li>
+                  <li key={h.id} className="flex items-start gap-3 text-sm"><div className="mt-1 h-2 w-2 rounded-full bg-primary" /><div><div>{h.from_status ?? "—"} → <b>{h.to_status}</b></div><div className="text-xs text-muted-foreground">{new Date(h.created_at).toLocaleString()}{h.note ? ` · ${h.note}` : ""}</div></div></li>
                 ))}
               </ol>
             )}
@@ -199,9 +208,7 @@ function Detail() {
           <Card><CardHeader><CardTitle className="text-base">Advance status</CardTitle></CardHeader><CardContent className="space-y-3">
             <Select value={nextStatus} onValueChange={setNextStatus}>
               <SelectTrigger><SelectValue /></SelectTrigger>
-              <SelectContent>
-                {APPLICATION_STATUSES.map((s) => <SelectItem key={s} value={s}>{STATUS_LABEL[s]}</SelectItem>)}
-              </SelectContent>
+              <SelectContent>{APPLICATION_STATUSES.map((s) => <SelectItem key={s} value={s}>{STATUS_LABEL[s]}</SelectItem>)}</SelectContent>
             </Select>
             <Textarea placeholder="Note (optional, recorded in status history)" value={note} onChange={(e) => setNote(e.target.value)} />
             <Button onClick={doAdvance}>Update status</Button>
