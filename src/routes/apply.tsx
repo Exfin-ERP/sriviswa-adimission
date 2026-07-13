@@ -617,7 +617,7 @@ function Wizard({ initialType, session }: { initialType?: InstitutionType; sessi
               <ArrowLeft className="mr-1 h-4 w-4" /> Back
             </Button>
             <div className="flex gap-2">
-              <Button variant="outline" onClick={() => saveDraft(false)} disabled={saving || !form.campus_id || !form.program_id}>
+              <Button variant="outline" onClick={() => saveDraft(false)} disabled={saving || !form.academic_year_id}>
                 {saving && <Loader2 className="mr-1 h-4 w-4 animate-spin" />}Save draft
               </Button>
               {step < STEPS.length - 1 ? (
