@@ -83,6 +83,11 @@ type FormData = {
   quota_id?: string;
   hostel_required: boolean;
   hostel_id?: string;
+  // Local Sri Viswa selection (not persisted to Supabase yet)
+  sel_category?: InstitutionCategoryId;
+  sel_branch?: string;
+  sel_course?: string;
+  sel_campus?: string;
   student: any;
   parent: any;
   address: any;
