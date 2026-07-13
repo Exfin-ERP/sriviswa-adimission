@@ -43,7 +43,7 @@ function AuthPage() {
     });
     setLoading(false);
     if (error) return toast.error(error.message);
-    toast.success("Account created. You can now sign in.");
+    toast.success("Account created. If email confirmation is enabled, please confirm your email before signing in.");
   }
 
   return (
@@ -65,7 +65,7 @@ function AuthPage() {
           <div className="md:hidden mb-8"><Logo size={40} /></div>
           <h1 className="text-2xl font-bold">Staff sign in</h1>
           <p className="mt-1 text-sm text-muted-foreground">
-            Applicants can apply without signing in. <Link to="/apply" className="text-primary underline">Start an application</Link>.
+            Applicants need an account to save progress and submit the form. <Link to="/apply" className="text-primary underline">Start an application</Link>.
           </p>
           <Tabs defaultValue="signin" className="mt-6">
             <TabsList className="grid w-full grid-cols-2">
