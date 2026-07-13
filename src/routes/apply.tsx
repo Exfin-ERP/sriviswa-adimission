@@ -134,7 +134,7 @@ function ApplyPage() {
           To save your progress, upload documents and pay online, you need a Sri Viswa applicant account.
         </p>
         <div className="mt-6 flex gap-2">
-          <Button onClick={() => navigate({ to: "/auth" })}>Sign in / Create account</Button>
+          <Button onClick={() => navigate({ to: "/auth", search: { next: "/apply" } })}>Sign in / Create account</Button>
           <Link to="/"><Button variant="outline">Cancel</Button></Link>
         </div>
       </div>
