@@ -2,10 +2,6 @@ import { createServerFn } from "@tanstack/react-start";
 import { requireSupabaseAuth } from "@/integrations/supabase/auth-middleware";
 import { z } from "zod";
 
-// Supabase generated types are refreshed on schema change; cast to any here
-// so server functions compile before the type file catches up.
-type AnyClient = any;
-
 const ALLOWED_STATUSES = [
   "draft","submitted","under_review","documents_pending","documents_verified",
   "payment_pending","payment_completed","approved","rejected","admission_confirmed",
@@ -14,9 +10,6 @@ const ALLOWED_STATUSES = [
 async function actorRoles(supabase: any, userId: string) {
   const { data } = await supabase.from("user_roles").select("role").eq("user_id", userId);
   return (data ?? []).map((r: any) => r.role as string);
-}
-function isSuperOrAdmin(roles: string[]) {
-  return roles.some((r: string) => ["super_admin", "admin", "head_office"].includes(r));
 }
 
 /* ---------------- CREATE / SAVE DRAFT ---------------- */
@@ -32,6 +25,7 @@ export const createOrUpdateApplication = createServerFn({ method: "POST" })
     quota_id?: string | null;
     hostel_required?: boolean;
     hostel_id?: string | null;
+    admission_selection?: Record<string, unknown> | null;
     student?: Record<string, unknown>;
     parent?: Record<string, unknown>;
     address?: Record<string, unknown>;
@@ -40,7 +34,8 @@ export const createOrUpdateApplication = createServerFn({ method: "POST" })
     submit?: boolean;
   }) => input)
   .handler(async ({ data, context }) => {
-    const supabase: any = context.supabase; const { userId } = context;
+    const supabase: any = context.supabase;
+    const { userId } = context;
     let appId = data.id;
 
     const applicationPatch: any = {
@@ -52,6 +47,7 @@ export const createOrUpdateApplication = createServerFn({ method: "POST" })
       quota_id: data.quota_id ?? null,
       hostel_required: !!data.hostel_required,
       hostel_id: data.hostel_id ?? null,
+      admission_selection: data.admission_selection ?? {},
     };
     if (data.submit) {
       applicationPatch.status = "submitted";
@@ -95,7 +91,7 @@ export const createOrUpdateApplication = createServerFn({ method: "POST" })
 
     const { data: full } = await supabase
       .from("applications")
-      .select("id, application_number, status")
+      .select("id, application_number, status, admission_selection")
       .eq("id", appId)
       .single();
     return full!;
@@ -113,7 +109,7 @@ export const listApplications = createServerFn({ method: "POST" })
     let q = supabase
       .from("applications")
       .select(
-        "id, application_number, institution_type, status, campus_id, program_id, hostel_required, applicant_email, submitted_at, created_at, campuses(name), programs(name)",
+        "id, application_number, institution_type, admission_selection, status, campus_id, program_id, hostel_required, applicant_email, submitted_at, created_at, campuses(name), programs(name)",
         { count: "exact" }
       )
       .order("created_at", { ascending: false })
