@@ -599,12 +599,12 @@ function Wizard({ initialType, session }: { initialType?: InstitutionType; sessi
 
           {step === 10 && (
             <div className="space-y-3 text-sm">
-              <div><b>Institution:</b> {form.institution_type}</div>
-              <div><b>Campus:</b> {campuses.find((c) => c.id === form.campus_id)?.name}</div>
-              <div><b>Program:</b> {programs.find((p) => p.id === form.program_id)?.name}</div>
-              {form.branch_id && <div><b>Branch:</b> {branches.find((b) => b.id === form.branch_id)?.name}</div>}
+              <div><b>Institution:</b> {institutionCategories.find((c) => c.id === form.sel_category)?.label}</div>
+              <div><b>Branch:</b> {getBranchById(form.sel_branch)?.id} — {getBranchById(form.sel_branch)?.label}</div>
+              <div><b>Course:</b> {getCourseById(form.sel_course)?.label}</div>
+              <div><b>Campus:</b> {getCampusById(form.sel_campus)?.label}</div>
               <div><b>Student:</b> {form.student.first_name} {form.student.last_name}</div>
-              <div><b>Hostel:</b> {form.hostel_required ? hostels.find((h) => h.id === form.hostel_id)?.name ?? "Yes" : "No"}</div>
+              <div><b>Hostel:</b> {form.hostel_required ? "Yes" : "No"}</div>
               <div><b>Documents uploaded:</b> {docs.length} of {docDefs.filter((d) => d.required).length} required</div>
               <div className="rounded-md border border-primary/30 bg-primary-soft p-3 text-sm text-primary">
                 Please review carefully. Once you submit, critical fields are locked.
