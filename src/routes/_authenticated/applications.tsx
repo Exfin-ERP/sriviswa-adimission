@@ -88,7 +88,7 @@ function ApplicationsList() {
                 <TableHead>App #</TableHead>
                 <TableHead>Institution</TableHead>
                 <TableHead>Campus</TableHead>
-                <TableHead>Program</TableHead>
+                <TableHead>Course / Class</TableHead>
                 <TableHead>Hostel</TableHead>
                 <TableHead>Status</TableHead>
                 <TableHead>Submitted</TableHead>
@@ -100,22 +100,28 @@ function ApplicationsList() {
               {!isLoading && (data?.rows ?? []).length === 0 && (
                 <TableRow><TableCell colSpan={8} className="py-10 text-center text-sm text-muted-foreground">No applications match your filters.</TableCell></TableRow>
               )}
-              {(data?.rows ?? []).map((r: any) => (
-                <TableRow key={r.id}>
-                  <TableCell className="font-mono text-xs font-semibold">{r.application_number}</TableCell>
-                  <TableCell className="capitalize">{r.institution_type}</TableCell>
-                  <TableCell>{r.campuses?.name ?? "—"}</TableCell>
-                  <TableCell>{r.programs?.name ?? "—"}</TableCell>
-                  <TableCell>{r.hostel_required ? "Yes" : "No"}</TableCell>
-                  <TableCell><StatusBadge status={r.status as ApplicationStatus} /></TableCell>
-                  <TableCell className="text-xs text-muted-foreground">{r.submitted_at ? new Date(r.submitted_at).toLocaleDateString() : "—"}</TableCell>
-                  <TableCell>
-                    <Link to="/applications/$id" params={{ id: r.id }} className="inline-flex items-center gap-1 text-primary hover:underline">
-                      Open <ExternalLink className="h-3 w-3" />
-                    </Link>
-                  </TableCell>
-                </TableRow>
-              ))}
+              {(data?.rows ?? []).map((r: any) => {
+                const selection = r.admission_selection ?? {};
+                const institutionLabel = selection.category?.label ?? r.institution_type;
+                const campusLabel = selection.campus?.label ?? r.campuses?.name ?? "—";
+                const courseLabel = selection.course?.label ?? r.programs?.name ?? "—";
+                return (
+                  <TableRow key={r.id}>
+                    <TableCell className="font-mono text-xs font-semibold">{r.application_number}</TableCell>
+                    <TableCell className="capitalize">{institutionLabel}</TableCell>
+                    <TableCell>{campusLabel}</TableCell>
+                    <TableCell>{courseLabel}</TableCell>
+                    <TableCell>{r.hostel_required ? "Yes" : "No"}</TableCell>
+                    <TableCell><StatusBadge status={r.status as ApplicationStatus} /></TableCell>
+                    <TableCell className="text-xs text-muted-foreground">{r.submitted_at ? new Date(r.submitted_at).toLocaleDateString() : "—"}</TableCell>
+                    <TableCell>
+                      <Link to="/applications/$id" params={{ id: r.id }} className="inline-flex items-center gap-1 text-primary hover:underline">
+                        Open <ExternalLink className="h-3 w-3" />
+                      </Link>
+                    </TableCell>
+                  </TableRow>
+                );
+              })}
             </TableBody>
           </Table>
         </CardContent>
