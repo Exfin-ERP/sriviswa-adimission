@@ -98,9 +98,16 @@ export const createOrUpdateApplication = createServerFn({ method: "POST" })
       ["application_academic_history", data.academic],
       ["application_hostel_details", data.hostel_required ? data.hostel : undefined],
     ];
+    const sanitize = (obj: Record<string, unknown>) => {
+      const out: Record<string, unknown> = {};
+      for (const [k, v] of Object.entries(obj)) {
+        out[k] = typeof v === "string" && v.trim() === "" ? null : v;
+      }
+      return out;
+    };
     for (const [table, payload] of upserts) {
       if (!payload) continue;
-      const { error } = await supabase.from(table).upsert({ ...payload, application_id: appId });
+      const { error } = await supabase.from(table).upsert({ ...sanitize(payload), application_id: appId });
       if (error) throw new Error(`${table}: ${error.message}`);
     }
 
