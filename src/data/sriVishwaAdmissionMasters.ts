@@ -52,6 +52,8 @@ export const branches: Branch[] = [
     campusIds: ["school_hostel", "mess"] },
 
   // ---- Degree ----
+  // NOTE: "SVDEG" is a TEMPORARY internal branch code for the Degree College.
+  // Replace with the official Sri Viswa Degree College branch code once confirmed by admin.
   { id: "SVDEG", label: "SRI VISWA DEGREE COLLEGE", categoryId: "degree_college", kind: "day_scholar",
     campusIds: ["degree_campus"] },
 ];
