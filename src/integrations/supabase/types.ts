@@ -219,7 +219,9 @@ export type Database = {
           emergency_contact_relation: string | null
           medical_conditions: string | null
           mess_preference: string | null
+          parent_consent: boolean
           room_type: string | null
+          selected_campus_label: string | null
           updated_at: string
         }
         Insert: {
@@ -230,7 +232,9 @@ export type Database = {
           emergency_contact_relation?: string | null
           medical_conditions?: string | null
           mess_preference?: string | null
+          parent_consent?: boolean
           room_type?: string | null
+          selected_campus_label?: string | null
           updated_at?: string
         }
         Update: {
@@ -241,7 +245,9 @@ export type Database = {
           emergency_contact_relation?: string | null
           medical_conditions?: string | null
           mess_preference?: string | null
+          parent_consent?: boolean
           room_type?: string | null
+          selected_campus_label?: string | null
           updated_at?: string
         }
         Relationships: [
@@ -378,6 +384,7 @@ export type Database = {
       applications: {
         Row: {
           academic_year_id: string | null
+          admission_selection: Json
           applicant_email: string | null
           applicant_phone: string | null
           applicant_user_id: string | null
@@ -398,6 +405,7 @@ export type Database = {
         }
         Insert: {
           academic_year_id?: string | null
+          admission_selection?: Json
           applicant_email?: string | null
           applicant_phone?: string | null
           applicant_user_id?: string | null
@@ -418,6 +426,7 @@ export type Database = {
         }
         Update: {
           academic_year_id?: string | null
+          admission_selection?: Json
           applicant_email?: string | null
           applicant_phone?: string | null
           applicant_user_id?: string | null
