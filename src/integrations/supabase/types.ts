@@ -149,6 +149,12 @@ export type Database = {
       }
       application_documents: {
         Row: {
+          ai_checked_at: string | null
+          ai_checked_by: string | null
+          ai_extracted: Json | null
+          ai_flags: Json | null
+          ai_status: string | null
+          ai_summary: string | null
           application_id: string
           definition_id: string | null
           document_code: string
@@ -164,6 +170,12 @@ export type Database = {
           verified_by: string | null
         }
         Insert: {
+          ai_checked_at?: string | null
+          ai_checked_by?: string | null
+          ai_extracted?: Json | null
+          ai_flags?: Json | null
+          ai_status?: string | null
+          ai_summary?: string | null
           application_id: string
           definition_id?: string | null
           document_code: string
@@ -179,6 +191,12 @@ export type Database = {
           verified_by?: string | null
         }
         Update: {
+          ai_checked_at?: string | null
+          ai_checked_by?: string | null
+          ai_extracted?: Json | null
+          ai_flags?: Json | null
+          ai_status?: string | null
+          ai_summary?: string | null
           application_id?: string
           definition_id?: string | null
           document_code?: string
