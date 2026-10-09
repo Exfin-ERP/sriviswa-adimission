@@ -11,7 +11,8 @@ import { APPLICATION_STATUSES, STATUS_LABEL, type ApplicationStatus } from "@/li
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Textarea } from "@/components/ui/textarea";
 import { toast } from "sonner";
-import { ArrowLeft, Check, FileText, Printer, X } from "lucide-react";
+import { ArrowLeft, Printer } from "lucide-react";
+import { DocumentAiPanel } from "@/components/DocumentAiPanel";
 
 export const Route = createFileRoute("/_authenticated/applications/$id")({
   head: () => ({ meta: [{ title: "Application — Sri Viswa Admissions" }] }),
@@ -159,21 +160,8 @@ function Detail() {
         </TabsContent>
 
         <TabsContent value="documents">
-          <Card><CardContent className="p-4 space-y-3">
-            {documents.length === 0 && <div className="text-sm text-muted-foreground">No documents uploaded yet.</div>}
-            {documents.map((d: any) => (
-              <div key={d.id} className="flex items-center justify-between rounded-md border border-border bg-surface p-3">
-                <div>
-                  <div className="flex items-center gap-2 text-sm font-medium"><FileText className="h-4 w-4" /> {d.document_code}</div>
-                  <div className="text-xs text-muted-foreground">{d.file_name} · {d.verification_status}{d.remarks ? ` · ${d.remarks}` : ""}</div>
-                </div>
-                <div className="flex items-center gap-2">
-                  <Button size="sm" variant="outline" onClick={() => openDoc(d.file_path)}>Open</Button>
-                  <Button size="sm" variant="outline" className="text-accent" onClick={() => doVerify(d.id, "verified")}><Check className="mr-1 h-3 w-3" /> Verify</Button>
-                  <Button size="sm" variant="outline" className="text-destructive" onClick={() => doVerify(d.id, "rejected")}><X className="mr-1 h-3 w-3" /> Reject</Button>
-                </div>
-              </div>
-            ))}
+          <Card><CardContent className="p-4">
+            <DocumentAiPanel applicationId={id} documents={documents} />
           </CardContent></Card>
         </TabsContent>
 
