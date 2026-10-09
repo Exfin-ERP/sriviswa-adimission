@@ -2,7 +2,7 @@ import { createFileRoute, Link } from "@tanstack/react-router";
 import { useQuery, useQueryClient } from "@tanstack/react-query";
 import { useServerFn } from "@tanstack/react-start";
 import { useState } from "react";
-import { getApplication, advanceStatus, verifyDocument, getDocumentSignedUrl } from "@/lib/applications.functions";
+import { getApplication, advanceStatus } from "@/lib/applications.functions";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Button } from "@/components/ui/button";
@@ -32,8 +32,6 @@ function Detail() {
   const { id } = Route.useParams();
   const call = useServerFn(getApplication);
   const advance = useServerFn(advanceStatus);
-  const verify = useServerFn(verifyDocument);
-  const signUrl = useServerFn(getDocumentSignedUrl);
   const qc = useQueryClient();
   const [nextStatus, setNextStatus] = useState<string>("under_review");
   const [note, setNote] = useState("");
@@ -58,22 +56,6 @@ function Detail() {
       toast.success("Status updated");
       setNote("");
       qc.invalidateQueries({ queryKey: ["app", id] });
-    } catch (e: any) { toast.error(e.message); }
-  }
-
-  async function doVerify(docId: string, status: string) {
-    const remarks = status === "rejected" ? prompt("Reason for rejection?") ?? undefined : undefined;
-    try {
-      await verify({ data: { id: docId, status, remarks } } as any);
-      qc.invalidateQueries({ queryKey: ["app", id] });
-      toast.success("Document " + status);
-    } catch (e: any) { toast.error(e.message); }
-  }
-
-  async function openDoc(path: string) {
-    try {
-      const { url } = await signUrl({ data: { path } } as any);
-      window.open(url, "_blank", "noopener");
     } catch (e: any) { toast.error(e.message); }
   }
 
