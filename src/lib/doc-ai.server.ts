@@ -75,7 +75,7 @@ export async function analyzeDocumentImage(opts: {
     },
   } as any);
   try {
-    return (await result.output) as DocAiResult;
+    return DocAiSchema.parse(await result.output);
   } catch (e) {
     if (NoObjectGeneratedError.isInstance(e)) throw new Error("AI could not read this document. Please verify manually.");
     const status = (e as any)?.statusCode ?? (e as any)?.cause?.statusCode;
